@@ -8,11 +8,12 @@ type CallbacksPipelineProps = {
   outputLocation: string;
   callbackNodes: ASTNode[];
   params: PatternKind[];
-  sourceFile: string;
+  source: string;
   propertyNames: Record<string, string[]>;
   functionName: string;
-  stateOutputLocation: string;
+  stateLocation: string;
   stateName: string;
+  callbacksName: string;
 };
 export default async function callbacksPipeline({
   ip,
@@ -21,31 +22,29 @@ export default async function callbacksPipeline({
   outputLocation,
   params,
   stateName,
-  stateOutputLocation,
-  sourceFile,
+  stateLocation,
+  source,
   propertyNames,
   functionName,
+  callbacksName,
 }: CallbacksPipelineProps) {
   await ip
     .parseString({
       text: callbacksTemplate,
       outputLocation,
     })
-    .injectFunctionBody({ nodes: callbackNodes }, { name: functionName })
-    .injectImportsFromFile(
-      { origin: { source: sourceFile, type: "source" } },
-      {}
-    )
-    .injectReturnAllFunctionVariables({}, { name: functionName })
+    .injectFunctionBody({ nodes: callbackNodes }, { name: callbacksName })
+    .injectImportsFromFile({ origin: { source, type: "source" } }, {})
+    .injectReturnAllFunctionVariables({}, { name: callbacksName })
     .injectStringTemplate({
       position: "lastLine",
-      template: `export type ${functionName}Return = ReturnType <typeof ${functionName}>`,
+      template: `export type ${callbacksName}Return = ReturnType <typeof ${callbacksName}>`,
     })
     .injectFunctionParams(
       { stringTemplate: `state: ${stateName}Return` },
-      { name: functionName }
+      { name: callbacksName }
     )
-    .injectFunctionParams({ nodes: params }, { name: functionName })
+    .injectFunctionParams({ nodes: params }, { name: callbacksName })
     .customInject((ip) => {
       for (const property of Object.keys(propertyNames)) {
         ip.injectObjectForAccessors({
@@ -65,7 +64,7 @@ export default async function callbacksPipeline({
     .injectObjectForAccessors({
       objectName: "state",
       accessors: (ip) => {
-        return ip.pipelineStore[stateOutputLocation].variableNames;
+        return ip.pipelineStore[stateLocation].variableNames;
       },
     })
     .storeFileVariables()

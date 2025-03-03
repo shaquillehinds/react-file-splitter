@@ -9,9 +9,9 @@ type StatePipelineProps = {
   stateNodes: ASTNode[];
   params: PatternKind[];
   paramsAliases: TSTypeAliasDeclaration[];
-  sourceFile: string;
+  source: string;
   propertyNames: Record<string, string[]>;
-  functionName: string;
+  stateName: string;
 };
 export default async function statePipeline({
   ip,
@@ -20,18 +20,17 @@ export default async function statePipeline({
   outputLocation,
   params,
   paramsAliases,
-  sourceFile,
+  source,
   propertyNames,
-  functionName,
+  stateName,
 }: StatePipelineProps) {
-  console.log($lf(27), functionName);
   await ip
     .parseString({
       text: stateTemplate,
       outputLocation: outputLocation,
     })
-    .injectFunctionBody({ nodes: stateNodes }, { name: functionName })
-    .injectFunctionParams({ nodes: params }, { name: functionName })
+    .injectFunctionBody({ nodes: stateNodes }, { name: stateName })
+    .injectFunctionParams({ nodes: params }, { name: stateName })
     .injectToProgram(
       {
         nodes: paramsAliases,
@@ -47,20 +46,12 @@ export default async function statePipeline({
         });
       }
     })
-    .injectImportsFromFile(
-      { origin: { source: sourceFile, type: "source" } },
-      {}
-    )
-    .injectReturnAllFunctionVariables({}, { name: functionName })
+    .injectImportsFromFile({ origin: { source, type: "source" } }, {})
+    .injectReturnAllFunctionVariables({}, { name: stateName })
     .injectStringTemplate({
       position: "lastLine",
-      template: `export type ${functionName}Return = ReturnType <typeof ${functionName}>`,
+      template: `export type ${stateName}Return = ReturnType <typeof ${stateName}>`,
     })
     .storeFileVariables()
     .finish();
-}
-
-function $lf(n: number) {
-  return "$lf|splitFile/pipeline/state.pipeline.ts:" + n + " >";
-  // Automatically injected by Log Location Injector vscode extension
 }

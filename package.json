@@ -28,6 +28,7 @@
     "publish": "sh scripts/publish.sh",
     "vscode:prepublish": "yarn run compile",
     "compile": "tsc -p ./",
+    "experiment": "yarn compile && node dist/experiment.js",
     "watch": "tsc -watch -p ./",
     "pretest": "yarn run compile && yarn run lint",
     "lint": "eslint src",

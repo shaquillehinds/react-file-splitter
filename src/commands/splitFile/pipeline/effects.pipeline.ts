@@ -8,45 +8,44 @@ type EffectsPipelineProps = {
   outputLocation: string;
   effectNodes: ASTNode[];
   params: PatternKind[];
-  sourceFile: string;
+  source: string;
   propertyNames: Record<string, string[]>;
   functionName: string;
-  stateOutputLocation: string;
+  stateLocation: string;
   stateName: string;
-  callbacksOutputLocation: string;
+  callbacksLocation: string;
   callbacksName: string;
+  effectsName: string;
 };
 export default async function effectsPipeline({
   ip,
   callbacksName,
-  callbacksOutputLocation,
+  callbacksLocation,
   effectNodes,
   effectsTemplate,
   outputLocation,
   params,
   stateName,
-  stateOutputLocation,
-  sourceFile,
+  stateLocation,
+  source,
   propertyNames,
   functionName,
+  effectsName,
 }: EffectsPipelineProps) {
   await ip
     .parseString({
       text: effectsTemplate,
       outputLocation,
     })
-    .injectFunctionBody({ nodes: effectNodes }, { name: functionName })
-    .injectImportsFromFile(
-      { origin: { source: sourceFile, type: "source" } },
-      {}
-    )
+    .injectFunctionBody({ nodes: effectNodes }, { name: effectsName })
+    .injectImportsFromFile({ origin: { source, type: "source" } }, {})
     .injectFunctionParams(
       {
         stringTemplate: `state: ${stateName}Return, callbacks: ${callbacksName}Return`,
       },
-      { name: functionName }
+      { name: effectsName }
     )
-    .injectFunctionParams({ nodes: params }, { name: functionName })
+    .injectFunctionParams({ nodes: params }, { name: effectsName })
     .injectImport({
       importName: `${functionName}Props`,
       source: "./state.tsx",
@@ -62,11 +61,11 @@ export default async function effectsPipeline({
     .customInject((cp) => {
       cp.injectObjectForAccessors({
         objectName: "state",
-        accessors: cp.pipelineStore[stateOutputLocation].variableNames,
+        accessors: cp.pipelineStore[stateLocation].variableNames,
       });
       cp.injectObjectForAccessors({
         objectName: "callbacks",
-        accessors: cp.pipelineStore[callbacksOutputLocation].variableNames,
+        accessors: cp.pipelineStore[callbacksLocation].variableNames,
       });
       for (const property of Object.keys(propertyNames)) {
         cp.injectObjectForAccessors({

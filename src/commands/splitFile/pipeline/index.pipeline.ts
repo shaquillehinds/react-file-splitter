@@ -7,22 +7,22 @@ type IndexPipelineProps = {
   outputLocation: string;
   indexTemplate: string;
   params: PatternKind[];
-  sourceFile: string;
+  source: string;
   propertyNames: Record<string, string[]>;
   functionName: string;
-  stateOutputLocation: string;
-  callbacksOutputLocation: string;
+  stateLocation: string;
+  callbacksLocation: string;
   returnStatement: ReturnStatement;
   controllerName: string;
 };
 export default async function indexPipeline({
   ip,
   indexTemplate,
-  callbacksOutputLocation,
+  callbacksLocation,
   outputLocation,
   params,
-  stateOutputLocation,
-  sourceFile,
+  stateLocation,
+  source,
   propertyNames,
   functionName,
   controllerName,
@@ -51,18 +51,15 @@ const { state, callbacks } = ${controllerName}(props);
       source: "./controller/index.tsx",
     })
     .injectReturnStatement({ node: returnStatement }, { name: functionName })
-    .injectImportsFromFile(
-      { origin: { source: sourceFile, type: "source" } },
-      {}
-    )
+    .injectImportsFromFile({ origin: { source, type: "source" } }, {})
     .commit((cp) => {
       cp.injectObjectForAccessors({
         objectName: "state",
-        accessors: cp.pipelineStore[stateOutputLocation].variableNames,
+        accessors: cp.pipelineStore[stateLocation].variableNames,
       });
       cp.injectObjectForAccessors({
         objectName: "callbacks",
-        accessors: cp.pipelineStore[callbacksOutputLocation].variableNames,
+        accessors: cp.pipelineStore[callbacksLocation].variableNames,
       });
       for (const property of Object.keys(propertyNames)) {
         cp.injectObjectForAccessors({

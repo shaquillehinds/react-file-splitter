@@ -34,18 +34,18 @@ export default async function splitFilePipeline(props: SplitFilePipelineProps) {
       {}
     ).col;
 
-    const originalDefExpName = InjectorPipeline.getName(originalDefExpCol);
+    const functionName = InjectorPipeline.getName(originalDefExpCol);
 
-    const stateName = `${originalDefExpName}State`;
-    const callbacksName = `${originalDefExpName}Callbacks`;
-    const effectsName = `${originalDefExpName}Effects`;
-    const controllerName = `${originalDefExpName}Controller`;
+    const stateName = `${functionName}State`;
+    const callbacksName = `${functionName}Callbacks`;
+    const effectsName = `${functionName}Effects`;
+    const controllerName = `${functionName}Controller`;
 
     const stateTemplate = `export default function ${stateName}(){}`;
     const callbacksTemplate = `export default function ${callbacksName}(){}`;
     const effectsTemplate = `export default function ${effectsName}(){}`;
     const controllerTemplate = `export default function ${controllerName}(){}`;
-    const indexTemplate = `export default function ${originalDefExpName}(){}`;
+    const indexTemplate = `export default function ${functionName}(){}`;
 
     const newFilesDirecotry = `${props.currDirectory}/${props.fileName}`;
     const controllerDirectory = `${newFilesDirecotry}/controller`;
@@ -58,10 +58,10 @@ export default async function splitFilePipeline(props: SplitFilePipelineProps) {
 
     console.log($lf(59), newFilesDirecotry);
 
-    if (originalDefExpName) {
+    if (functionName) {
       const functionFinder = InjectorPipeline.getFinder("functionFinder");
       const originalFuncCol = functionFinder(jcs, originalFileCollection, {
-        name: originalDefExpName,
+        name: functionName,
       }).col;
 
       const originalFuncBodyNodes =
@@ -73,7 +73,7 @@ export default async function splitFilePipeline(props: SplitFilePipelineProps) {
       const params = InjectorPipeline.getFunctionParams(originalFuncCol).map(
         (p, i) => {
           const paramName = `props${i ? i : ""}`;
-          const paramTypeName = `${originalDefExpName}Props${i ? i : ""}`;
+          const paramTypeName = `${functionName}Props${i ? i : ""}`;
           const transformed = InjectorPipeline.objParamToIdentifier({
             param: p,
             paramName,
@@ -136,10 +136,10 @@ export default async function splitFilePipeline(props: SplitFilePipelineProps) {
         const ip = new InjectorPipeline("");
 
         await statePipeline({
-          functionName: stateName,
+          stateName,
           outputLocation: stateLocation,
           stateTemplate,
-          sourceFile: source,
+          source,
           paramsAliases,
           propertyNames,
           stateNodes,
@@ -149,11 +149,12 @@ export default async function splitFilePipeline(props: SplitFilePipelineProps) {
 
         await callbacksPipeline({
           stateName,
-          functionName: callbacksName,
+          functionName,
+          callbacksName,
           outputLocation: callbacksLocation,
           callbacksTemplate,
-          stateOutputLocation: stateLocation,
-          sourceFile: source,
+          stateLocation,
+          source,
           propertyNames,
           callbackNodes,
           params,
@@ -162,14 +163,15 @@ export default async function splitFilePipeline(props: SplitFilePipelineProps) {
 
         await effectsPipeline({
           stateName,
-          functionName: effectsName,
+          functionName,
+          effectsName,
           outputLocation: effectsLocation,
-          stateOutputLocation: stateLocation,
+          stateLocation,
           callbacksName,
-          callbacksOutputLocation: callbacksLocation,
+          callbacksLocation,
           effectsTemplate,
           effectNodes,
-          sourceFile: source,
+          source,
           propertyNames,
           params,
           ip,
@@ -177,28 +179,29 @@ export default async function splitFilePipeline(props: SplitFilePipelineProps) {
 
         await controllerPipeline({
           stateName,
-          functionName: controllerName,
+          functionName,
+          controllerName,
           outputLocation: controllerLocation,
-          stateOutputLocation: stateLocation,
+          stateLocation,
           callbacksName,
           effectsName,
-          callbacksOutputLocation: callbacksLocation,
+          callbacksLocation,
           controllerTemplate,
           controllerNodes,
-          sourceFile: source,
+          source,
           propertyNames,
           params,
           ip,
         });
         await indexPipeline({
-          functionName: originalDefExpName,
+          functionName,
           outputLocation: indexLocation,
-          stateOutputLocation: stateLocation,
-          callbacksOutputLocation: callbacksLocation,
+          stateLocation,
+          callbacksLocation,
           controllerName,
           indexTemplate,
           returnStatement: colGroups.ReturnStatement[0] as ReturnStatement,
-          sourceFile: source,
+          source,
           propertyNames,
           params,
           ip,
