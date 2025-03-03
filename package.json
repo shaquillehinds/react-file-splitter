@@ -1,0 +1,53 @@
+{
+  "name": "react-file-splitter",
+  "publisher": "shaquillehinds",
+  "displayName": "React File Splitter",
+  "description": "Splits a react file into Controller and View, then Controller into state, callbacks and effects files.",
+  "version": "0.0.1",
+  "icon": "icon.jpeg",
+  "engines": {
+    "vscode": "^1.97.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "react-file-splitter.splitFile",
+        "title": "React File Splitter: Split this file up!"
+      }
+    ]
+  },
+  "scripts": {
+    "install-extension": "sh scripts/install.sh",
+    "publish": "sh scripts/publish.sh",
+    "vscode:prepublish": "yarn run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "yarn run compile && yarn run lint",
+    "lint": "eslint src",
+    "test": "vscode-test"
+  },
+  "devDependencies": {
+    "@types/jscodeshift": "^0.12.0",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "20.x",
+    "@types/vscode": "^1.97.0",
+    "@typescript-eslint/eslint-plugin": "^8.22.0",
+    "@typescript-eslint/parser": "^8.22.0",
+    "@vscode/test-cli": "^0.0.10",
+    "@vscode/test-electron": "^2.4.1",
+    "eslint": "^9.19.0",
+    "tsc-alias": "^1.8.11",
+    "typescript": "^5.7.3",
+    "vsce": "^2.15.0"
+  },
+  "dependencies": {
+    "tscodeinject": "^2.3.7"
+  }
+}
